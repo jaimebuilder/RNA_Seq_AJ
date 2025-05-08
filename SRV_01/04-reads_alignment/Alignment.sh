@@ -1,6 +1,6 @@
 #!/bin/bash
 #Script name: RNA-Seq Alignment with Multiple Aligners and Output Management
-#Author: Jaime Salama García
+#Author: Jaime Salama García & Alberto Romero Lucas
 #Date: 23/04/2025
 #Purpose: A Bash script that automates RNA-Seq alignment for multiple samples, allowing users to choose between
 # popular aligners like STAR, HISAT2, or Bowtie2. The script should process a batch of paired-end FASTQ files, manage outputs,
