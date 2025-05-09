@@ -164,13 +164,13 @@ while IFS= read -r sample; do
 						hisat2 -x $outputDir/indices/HISAT2_genome_indices/genome_index \
 						-1 <(zcat $inputDir/$frw_reads) \
 						-2 <(zcat $inputDir/$rvs_reads) \
-						-S $outputDir/$sample/results/HISAT2/HISAT2.sam && echo "Alignment with sample $sample done" || echo "Alignment with sample $sample failed"
+						-S $outputDir/$sample/results/HISAT2/HISAT2.bam && echo "Alignment with sample $sample done" || echo "Alignment with sample $sample failed"
                                         ;;
                                         0)
 						hisat2 -x $outputDir/indices/HISAT2_genome_indices/genome_index \
 						-1 $inputDir/$frw_reads \
 						-2 $inputDir/$rvs_reads \
-						-S $outputDir/$sample/results/HISAT2/HISAT2.sam && echo "Alignment with sample $sample done" || echo "Alignment with sample $sample failed"
+						-S $outputDir/$sample/results/HISAT2/HISAT2.bam && echo "Alignment with sample $sample done" || echo "Alignment with sample $sample failed"
                                         ;;
 		        ;;
 
@@ -183,7 +183,7 @@ while IFS= read -r sample; do
   						-x $outputDir/indices/bowtie2_genome_indices/genome_index \
   						-1 <(zcat $inputDir/$frw_reads) \
  	 					-2 <(zcat $inputDir/$rvs_reads) \
-  						-S $outputDir/$sample/results/bowtie2/alineamiento.sam \
+  						-S $outputDir/$sample/results/bowtie2/alineamiento.bam \
   						-p 6 && echo "Alignment with sample $sample done" || echo "Alignment with sample $sample failed"
 					;;
 					0)
@@ -191,7 +191,7 @@ while IFS= read -r sample; do
                                                 -x $outputDir/indices/bowtie2_genome_indices/genome_index \
                                                 -1 $inputDir/$frw_reads \
                                                 -2 $inputDir/$rvs_reads \
-                                                -S $outputDir/$sample/results/bowtie2/alineamiento.sam \
+                                                -S $outputDir/$sample/results/bowtie2/alineamiento.bam \
                                                 -p 6 && echo "Alignment with sample $sample done" || echo "Alignment with sample $sample failed"
 					;;
                         ;;
