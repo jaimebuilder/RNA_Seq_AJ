@@ -92,6 +92,7 @@ case $aligner_tool in
                 --genomeDir $outputDir/indices/STAR_genome_indices \
                 --genomeFastaFiles  $genome_fasta \
                 --sjdbGTFfile  $genome_GTF \
+				--genomeSAindexNbases 12 # optimiza en base al tamaño del genoma siguiendo la formula log2(genome_length)/2 -1. El predeterminado es 14, no debe superarse.
                 --sjdbOverhang 100 && echo "Genome indices created" || echo "indices failed" #Se puede poner longitud max de las reads -1; habria que comprobar la max length de las reads.
 	;;
 	HISAT2)
@@ -164,38 +165,36 @@ while IFS= read -r sample; do
 						hisat2 -x $outputDir/indices/HISAT2_genome_indices/genome_index \
 						-1 <(zcat $inputDir/$frw_reads) \
 						-2 <(zcat $inputDir/$rvs_reads) \
-						-S $outputDir/$sample/results/HISAT2/HISAT2.bam && echo "Alignment with sample $sample done" || echo "Alignment with sample $sample failed"
+						-S $outputDir/$sample/results/HISAT2/HISAT2.sam && echo "Alignment with sample $sample done" || echo "Alignment with sample $sample failed"
                                         ;;
                                         0)
 						hisat2 -x $outputDir/indices/HISAT2_genome_indices/genome_index \
 						-1 $inputDir/$frw_reads \
 						-2 $inputDir/$rvs_reads \
-						-S $outputDir/$sample/results/HISAT2/HISAT2.bam && echo "Alignment with sample $sample done" || echo "Alignment with sample $sample failed"
+						-S $outputDir/$sample/results/HISAT2/HISAT2.sam && echo "Alignment with sample $sample done" || echo "Alignment with sample $sample failed"
                                         ;;
 		        ;;
 
 			Bowtie2)
 				echo "Starting Bowtie2 alignment"
 				#Bowtie2 alignment:
-				case comprimido in
+				case comprimido in 			#REVISAR OUTPUT, se busca que sean .bam pero hisat2 y bowtie2 solo admiten output en sam, buscar soluciones con samtools
 					1)
 						bowtie2 \
   						-x $outputDir/indices/bowtie2_genome_indices/genome_index \
   						-1 <(zcat $inputDir/$frw_reads) \
  	 					-2 <(zcat $inputDir/$rvs_reads) \
-  						-S $outputDir/$sample/results/bowtie2/alineamiento.bam \
+  						-S $outputDir/$sample/results/bowtie2/alineamiento.sam \
   						-p 6 && echo "Alignment with sample $sample done" || echo "Alignment with sample $sample failed"
 					;;
 					0)
 						bowtie2 \
-                                                -x $outputDir/indices/bowtie2_genome_indices/genome_index \
-                                                -1 $inputDir/$frw_reads \
-                                                -2 $inputDir/$rvs_reads \
-                                                -S $outputDir/$sample/results/bowtie2/alineamiento.bam \
-                                                -p 6 && echo "Alignment with sample $sample done" || echo "Alignment with sample $sample failed"
+                        -x $outputDir/indices/bowtie2_genome_indices/genome_index \
+                        -1 $inputDir/$frw_reads \
+                    	-2 $inputDir/$rvs_reads \
+                    	-S $outputDir/$sample/results/bowtie2/alineamiento.bam \
+        				-p 6 && echo "Alignment with sample $sample done" || echo "Alignment with sample $sample failed"
 					;;
-                        ;;
-
 			*)
 				echo "Aligner tool not valid"
 				exit 3
