@@ -43,13 +43,13 @@ fi
 #Obtainig counts files using featuresCounts
 {
 featureCounts \
--a $GTF \
--o ./$sample/counts.txt \
--T 20 \
--p \
--s 2 \
--t exon \
--g gene_id \
-$input_dir/SRR*/results/STAR/*sortedByCoord.out.bam
+    -a $GTF \
+    -o ./$sample/counts.txt \
+    -T 20 \
+    -p \
+    -s 2 \
+    -t exon \
+    -g gene_id \
+    $input_dir/SRR*/results/STAR/*sortedByCoord.out.bam
 } >> ./logs/counts_output.log 2>> ./logs/counts_error.log
 
