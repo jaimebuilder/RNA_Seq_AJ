@@ -56,7 +56,7 @@ if ! [[ -s $genome_GTF ]]; then
         exit 2
 fi
 #Input Directory
-if ! [[ -s $inputDir && -d $inputDir]]; then
+if ! [[ -s $inputDir && -d $inputDir ]]; then
         echo "error in input directory: $inputDir not found, is empty or is not a directory" >&2
         exit 2
 fi
@@ -76,7 +76,13 @@ if ! [[ -e $outputDir ]]; then
 fi
 
 if ! [[ -e $outputDir/indices ]]; then
+	echo "Creating $outputDir/indices directory"
 	mkdir $outputDir/indices
+fi
+#Creating log directory
+if ! [[ -e $outputDir/indices/logs ]]; then
+	echo "Creating $outputDir/indices/logs directory"
+	mkdir $outputDir/indices/logs
 fi
 
 #Creating index of the selected aligner
@@ -87,13 +93,13 @@ case $aligner_tool in
 		#Alignment will be carried out by STAR.
                 #First, STAR need genome indices.
 		echo "STAR selected, creating indices..."
-                STAR --runThreadN  6 \
+                STAR --runThreadN  20 \
                 --runMode genomeGenerate \
                 --genomeDir $outputDir/indices/STAR_genome_indices \
-                --genomeFastaFiles  $genome_fasta \
+                --genomeFastaFiles  <(zcat $genome_fasta) \
                 --sjdbGTFfile  $genome_GTF \
-				--genomeSAindexNbases 12 # optimiza en base al tamaño del genoma siguiendo la formula log2(genome_length)/2 -1. El predeterminado es 14, no debe superarse.
-                --sjdbOverhang 100 && echo "Genome indices created" || echo "indices failed" #Se puede poner longitud max de las reads -1; habria que comprobar la max length de las reads.
+				--genomeSAindexNbases 13 # optimiza en base al tamaño del genoma siguiendo la formula log2(genome_length)/2 -1. El predeterminado es 14, no debe superarse.
+                --sjdbOverhang 75 && echo "Genome indices created" || echo "indices failed" #Se puede poner longitud max de las reads -1; habria que comprobar la max length de las reads.
 	;;
 	HISAT2)
 		echo "HISAT2 selected, creating indices..."
@@ -110,11 +116,12 @@ case $aligner_tool in
 		exit 3
 	;;
 esac
-}  >> $outputDir/indices/logs/index_${aligner_tool}_output.log 2>> $outputDir/indices/logs/index_${aligner_tool}_error.log
+}  2> >(tee -a $outputDir/indices/logs/index_${aligner_tool}_error.log) > >(tee -a $outputDir/indices/logs/index_${aligner_tool}_output.log)
 
 #Bucle que recorre la lista de samples.
-while IFS= read -r sample; do
 {
+while IFS= read -r sample; do
+
 	#For each sample, creates a subdirectory just in case it does not exists previosly
 	if ! [[ -e $outputDir/$sample ]]; then
         	echo " sample $sample directory does not exists, creating..."
@@ -146,35 +153,35 @@ while IFS= read -r sample; do
 			STAR)
 				#propper alignemnt is carried out.
 				echo "Starting STAR alignment"
-				STAR --genomeDir $outputDir/STAR_genome_indices/ \
-					--runThreadN 6 \
+				STAR --genomeDir $outputDir/indices/STAR_genome_indices \
+					--runThreadN 20 \
 					--readFilesIn $inputDir/$frw_reads $inputDir/$rvs_reads \
 					--outFileNamePrefix $outputDir/$sample/results/STAR/ \
 					--outSAMtype BAM SortedByCoordinate \
 					--outSAMunmapped Within \
 					--outSAMattributes Standard \
 					--quantMode TranscriptomeSAM GeneCounts \
+					--outTmpDir /tmp/STAR_tmp \
 					$comando && echo "Alignment with sample $sample done" || echo "Alignment with sample $sample failed"
 			;;
-
 			HISAT2)
 				echo "Starting HISAT2 alignment"
 				# HISAT2 alignment
                 		case comprimido in
-                                        1)
-						hisat2 -x $outputDir/indices/HISAT2_genome_indices/genome_index \
-						-1 <(zcat $inputDir/$frw_reads) \
-						-2 <(zcat $inputDir/$rvs_reads) \
-						-S $outputDir/$sample/results/HISAT2/HISAT2.sam && echo "Alignment with sample $sample done" || echo "Alignment with sample $sample failed"
-                                        ;;
-                                        0)
-						hisat2 -x $outputDir/indices/HISAT2_genome_indices/genome_index \
-						-1 $inputDir/$frw_reads \
-						-2 $inputDir/$rvs_reads \
-						-S $outputDir/$sample/results/HISAT2/HISAT2.sam && echo "Alignment with sample $sample done" || echo "Alignment with sample $sample failed"
-                                        ;;
-		        ;;
-
+                        	1)
+							hisat2 -x $outputDir/indices/HISAT2_genome_indices/genome_index \
+							-1 <(zcat $inputDir/$frw_reads) \
+							-2 <(zcat $inputDir/$rvs_reads) \
+							-S $outputDir/$sample/results/HISAT2/HISAT2.sam && echo "Alignment with sample $sample done" || echo "Alignment with sample $sample failed"
+                            ;;
+                            0)
+							hisat2 -x $outputDir/indices/HISAT2_genome_indices/genome_index \
+							-1 $inputDir/$frw_reads \
+							-2 $inputDir/$rvs_reads \
+							-S $outputDir/$sample/results/HISAT2/HISAT2.sam && echo "Alignment with sample $sample done" || echo "Alignment with sample $sample failed"
+                            ;;
+						esac
+			;;
 			Bowtie2)
 				echo "Starting Bowtie2 alignment"
 				#Bowtie2 alignment:
@@ -185,7 +192,7 @@ while IFS= read -r sample; do
   						-1 <(zcat $inputDir/$frw_reads) \
  	 					-2 <(zcat $inputDir/$rvs_reads) \
   						-S $outputDir/$sample/results/bowtie2/alineamiento.sam \
-  						-p 6 && echo "Alignment with sample $sample done" || echo "Alignment with sample $sample failed"
+  						-p 20 && echo "Alignment with sample $sample done" || echo "Alignment with sample $sample failed"
 					;;
 					0)
 						bowtie2 \
@@ -193,15 +200,16 @@ while IFS= read -r sample; do
                         -1 $inputDir/$frw_reads \
                     	-2 $inputDir/$rvs_reads \
                     	-S $outputDir/$sample/results/bowtie2/alineamiento.bam \
-        				-p 6 && echo "Alignment with sample $sample done" || echo "Alignment with sample $sample failed"
+        				-p 20 && echo "Alignment with sample $sample done" || echo "Alignment with sample $sample failed"
 					;;
+				esac
+			;;
 			*)
 				echo "Aligner tool not valid"
 				exit 3
-			;;
+			    ;;
 		esac
-} 2> >(tee -a $outputDir/$sample/logs/${sample}_alignment_error.log) > >(tee -a $outputDir/$sample/logs/${sample}_alignment_output.log) 
 done < $sample_list
-
+} 2> >(tee -a $outputDir/$sample/logs/${sample}_alignment_error.log) > >(tee -a $outputDir/$sample/logs/${sample}_alignment_output.log) 
 echo "Alignment completed"
 exit 0
