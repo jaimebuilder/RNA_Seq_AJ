@@ -40,13 +40,17 @@ fi
 {
 while IFS= read -r SRR; do
     fastp \
-  -i ${inputDir}/${SRR}_1.fastq.gz \ #fwd input
-  -I ${inputDir}/${SRR}_2.fastq.gz \ #reverse input
-  -o ${outputDir}/${SRR}_1.cleaned.fastq.gz \ #fwd output
-  -O ${outputDir}/${SRR}_2.cleaned.fastq.gz \ #reverse output
-  -h report.html \ # Crea reports html y json (opcionales, pues luego se realizara con fastqc)
+  -i ${inputDir}/${SRR}_1.fastq.gz \ 
+  -I ${inputDir}/${SRR}_2.fastq.gz \ 
+  -o ${outputDir}/${SRR}_1.cleaned.fastq.gz \ 
+  -O ${outputDir}/${SRR}_2.cleaned.fastq.gz \ 
+  -h report.html \ 
   -j report.json \
-  -w 20 #threads
+  -w 16 \
+  --detect_adapter_for_pe \
+  -q 20 
+  #fastp opts: fwd and revers inputs and outputs,  Crea reports html y json (opcionales, pues luego se realizara con fastqc) Autodetects adapter in Pair Ends, samples Filters any read below 20 phred score
+
 done < $SRR_file
 
-} 2>> $outputDir/logs/trimming_error.log >> $outputDir/logs/trimming.log 
+} >> $outputDir/logs/trimming.log 2>> $outputDir/logs/trimming_error.log 
