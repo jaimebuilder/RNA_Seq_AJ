@@ -4,12 +4,13 @@
 #Date: 08/05/2025
 #Purpose: using sra-toolkit import raw data with accesion number
 #DEPENDENCES: sra-tools
+#readonly VERSION="1.0.0"
 #Usage: ./Import_raw_data.sh -f SRA file 
 # El script requiere estos argumentos, con las siguientes flags:
 #1. -f SRA_file.txt File that contains the SRA accessions of the samples, one per line.
 #-h displays help
 #v displays version
-
+help_text="Usage: ./Import_raw_data.sh -f SRA file"
 
 #Parssing arguments
 while getopts "hvf:" opt; do
