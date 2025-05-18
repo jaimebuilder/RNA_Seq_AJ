@@ -39,18 +39,19 @@ fi
 
 {
 while IFS= read -r SRR; do
-    fastp \
+   fastp \
   -i ${inputDir}/${SRR}_1.fastq.gz \ 
   -I ${inputDir}/${SRR}_2.fastq.gz \ 
   -o ${outputDir}/${SRR}_1.cleaned.fastq.gz \ 
   -O ${outputDir}/${SRR}_2.cleaned.fastq.gz \ 
-  -h report.html \ 
-  -j report.json \
+  -h ${outputDir}/${SRR}_report.html \ 
+  -j ${outputDir}/${SRR}_report.json \
   -w 16 \
   --detect_adapter_for_pe \
-  -q 20 
-  #fastp opts: fwd and revers inputs and outputs,  Crea reports html y json (opcionales, pues luego se realizara con fastqc) Autodetects adapter in Pair Ends, samples Filters any read below 20 phred score
+  -q 20 \
+  --length_required 30 \
+  #fastp opts: fwd and revers inputs and outputs,  Crea reports html y json (opcionales, pues luego se realizara con fastqc) Autodetects adapter in Pair Ends, samples Filters any read below 20 phred score. reads shorter than 30 will be discarded
 
 done < $SRR_file
 
-} >> $outputDir/logs/trimming.log 2>> $outputDir/logs/trimming_error.log 
+} 2> >(tee -a $outputDir/logs/trimming_error.log) > >(tee -a $outputDir/logs/trimming.log)

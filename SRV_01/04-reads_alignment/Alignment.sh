@@ -200,7 +200,7 @@ while IFS= read -r sample; do
 				exit 3
 			;;
 		esac
-} >> $outputDir/$sample/logs/${sample}_alignment_output.log 2>> $outputDir/$sample/logs/${sample}_alignment_error.log
+} 2> >(tee -a $outputDir/$sample/logs/${sample}_alignment_error.log) > >(tee -a $outputDir/$sample/logs/${sample}_alignment_output.log) 
 done < $sample_list
 
 echo "Alignment completed"
