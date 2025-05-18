@@ -39,23 +39,17 @@ if ! [[ -e ./logs ]]; then
                 mkdir ./logs
 fi
 
-#Creation of a temporary file to obtain the name of each sample
-ls $input_dir | cat > temp_file.txt
 
 #Obtainig counts files using featuresCounts
 {
-while IFS= read -r sample; do
-    featureCounts \
-    -a $GTF \
-    -o ./$sample/counts.txt \
-    -T 20 \
-    -p \
-    -s 2 \
-    -t exon \
-    -g gene_id \
-    $input_dir/$sample/results/STAR/*.bam
-done < temp_file.txt
+featureCounts \
+-a $GTF \
+-o ./$sample/counts.txt \
+-T 20 \
+-p \
+-s 2 \
+-t exon \
+-g gene_id \
+$input_dir/SRR*/results/STAR/*sortedByCoord.out.bam
 } >> ./logs/counts_output.log 2>> ./logs/counts_error.log
 
-#Remove temporary file
-rm -rf temp_file.txt
