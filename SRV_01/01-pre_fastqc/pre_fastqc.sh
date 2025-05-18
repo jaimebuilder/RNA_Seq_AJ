@@ -47,4 +47,4 @@ fi
 fastqc ${inputDir}/*_1.fastq.gz ${inputDir}/*_2.fastq.gz -o ${outputDir}/fastqc -t 20   #Call fastqc with both forward and reverse samples, -o for output directory and -t for the threads fastqc could use.
 multiqc ${outputDir}/fastqc -o ${outputDir}/multiqc     # Call multiqc with the output of fastqc, -o is for output directory.
 
-} 2>> $outputDir/logs/pre_fastqc_error.log >> $outputDir/logs/pre_fastqc.log 
+} 2> >(tee -a $outputDir/logs/pre_fastqc_error.log) > >(tee -a $outputDir/logs/pre_fastqc.log) 

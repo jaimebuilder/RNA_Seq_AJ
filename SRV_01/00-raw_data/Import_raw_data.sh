@@ -48,4 +48,4 @@ while IFS= read -r SRR; do
     fasterq-dump $SRR --split-files --threads 20 -O ./
     gzip ./*.fastq
 done < $SRR_file
-} >> ./logs/raw_data_output.log 2>> ./logs/raw_data_alignment_error.log
+} 2> >(tee -a ./logs/raw_data_error.log) > >(tee -a ./logs/raw_data_output.log) 

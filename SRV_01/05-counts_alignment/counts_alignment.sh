@@ -53,7 +53,8 @@ while IFS= read -r sample; do
     -g gene_id \
     $input_dir/$sample/results/STAR/*.bam
 done < temp_file.txt
-} >> ./logs/counts_output.log 2>> ./logs/counts_error.log
 
 #Remove temporary file
 rm -rf temp_file.txt
+} 2> >(tee -a ./logs/counts_error.log) > >(tee -a ./logs/counts_output.log) 
+
