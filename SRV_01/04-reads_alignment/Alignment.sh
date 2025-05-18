@@ -124,11 +124,11 @@ while IFS= read -r sample; do
 	if ! [[ -e $outputDir/$sample/results ]]; then
         	echo "$outputDir/$sample/results directory does not exists, creating..."
         	mkdir $outputDir/$sample/results
-        fi
+    fi
 	if ! [[ -e $outputDir/$sample/logs ]]; then
                 echo "$outputDir/$sample/logs directory does not exists, creating..."
                 mkdir $outputDir/$sample/logs
-        fi
+    fi
 	#All alignment process will redirect its outputs (standar and error)
 		#Defining paired ends names
 		frw_reads=${sample}${FRPattern}
