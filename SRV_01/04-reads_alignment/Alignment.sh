@@ -47,22 +47,22 @@ fi
 #File validation:
 #Genome fasta file
 if ! [[ -s $genome_fasta ]]; then
-	echo "error in Genome Reference file: $genome_fasta not found or is empty"
+	echo "error in Genome Reference file: $genome_fasta not found or is empty" >&2
 	exit 2
 fi
 #genome GTF file
 if ! [[ -s $genome_GTF ]]; then
-        echo "error in Genome Annotation file: $genome_GTF not found or is empty"
+        echo "error in Genome Annotation file: $genome_GTF not found or is empty" >&2
         exit 2
 fi
 #Input Directory
 if ! [[ -s $inputDir && -d $inputDir]]; then
-        echo "error in input directory: $inputDir not found, is empty or is not a directory"
+        echo "error in input directory: $inputDir not found, is empty or is not a directory" >&2
         exit 2
 fi
 #sample list file
 if ! [[ -s $sample_list ]]; then
-        echo "error in sample list file: $sample_list not found or is empty"
+        echo "error in sample list file: $sample_list not found or is empty" >&2
         exit 2
 fi
 
