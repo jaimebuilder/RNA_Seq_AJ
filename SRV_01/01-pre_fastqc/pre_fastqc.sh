@@ -33,6 +33,13 @@ fi
 if ! [[ -e $outputDir/logs ]]; then
                 echo "$outputDir/logs directory does not exists, creating..."
                 mkdir $outputDir/logs
+				echo "$outputDir/logs created"
+fi
+
+if ! [[ -e $outputDir/fastqc ]]; then
+                echo "$outputDir/fastqc directory does not exists, creating..."
+                mkdir $outputDir/fastqc
+				echo "$outputDir/fastqc created"
 fi
 
 {
@@ -40,4 +47,4 @@ fi
 fastqc ${inputDir}/*_1.fastq.gz ${inputDir}/*_2.fastq.gz -o ${outputDir}/fastqc -t 20   #Call fastqc with both forward and reverse samples, -o for output directory and -t for the threads fastqc could use.
 multiqc ${outputDir}/fastqc -o ${outputDir}/multiqc     # Call multiqc with the output of fastqc, -o is for output directory.
 
-} 2>> $outputDir/pre_fastqc_error.log >> $outputDir/logs/pre_fastqc.log 
+} 2>> $outputDir/logs/pre_fastqc_error.log >> $outputDir/logs/pre_fastqc.log 
