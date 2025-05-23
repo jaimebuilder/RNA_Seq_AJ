@@ -44,7 +44,7 @@ fi
 {
 featureCounts \
     -a $GTF \
-    -o ./$sample/counts.txt \
+    -o ./counts.txt \
     -T 20 \
     -p \
     -s 2 \
