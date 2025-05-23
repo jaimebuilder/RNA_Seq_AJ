@@ -1,0 +1,15 @@
+Status	../04-reads_alignment//SRR12506729/results/STAR/Aligned.sortedByCoord.out.bam	../04-reads_alignment//SRR12506733/results/STAR/Aligned.sortedByCoord.out.bam	../04-reads_alignment//SRR12506734/results/STAR/Aligned.sortedByCoord.out.bam	../04-reads_alignment//SRR12506735/results/STAR/Aligned.sortedByCoord.out.bam	../04-reads_alignment//SRR12506736/results/STAR/Aligned.sortedByCoord.out.bam	../04-reads_alignment//SRR12506737/results/STAR/Aligned.sortedByCoord.out.bam
+Assigned	24420375	27306458	26471033	26084999	27121210	26354112
+Unassigned_Unmapped	495930	563738	477742	449194	459802	598092
+Unassigned_Read_Type	0	0	0	0	0	0
+Unassigned_Singleton	0	0	0	0	0	0
+Unassigned_MappingQuality	0	0	0	0	0	0
+Unassigned_Chimera	0	0	0	0	0	0
+Unassigned_FragmentLength	0	0	0	0	0	0
+Unassigned_Duplicate	0	0	0	0	0	0
+Unassigned_MultiMapping	1978098	1403112	1470170	1404480	2313394	2748100
+Unassigned_Secondary	0	0	0	0	0	0
+Unassigned_NonSplit	0	0	0	0	0	0
+Unassigned_NoFeatures	9125501	9362077	9241248	9252501	9659288	10646423
+Unassigned_Overlapping_Length	0	0	0	0	0	0
+Unassigned_Ambiguity	15640	31387	29649	25110	13908	14853

@@ -13,6 +13,7 @@ readonly VERSION="1.0.0"
 readonly help_text="Usage: $(basename $0) -i input_dir"
 
 #Parssing arguments
+
 while getopts "hvi:" opt; do
 	case $opt in
     	h) echo $help_text
@@ -36,25 +37,12 @@ if ! [[ -e ./logs ]]; then
                 echo "./logs directory does not exists, creating..."
                 mkdir ./logs
 fi
-
-#Creation of a temporary file to obtain the name of each sample
-ls $input_dir | cat > temp_file.txt
-
-#Obtainig counts files using featuresCounts
-{
-while IFS= read -r sample; do
-    featureCounts \
-    -a anotacion.gtf \
-    -o ./$sample/counts.txt \
     -T 20 \
     -p \
     -s 2 \
     -t exon \
     -g gene_id \
-    $input_dir/$sample/results/STAR/*.bam
-done < temp_file.txt
-
-#Remove temporary file
-rm -rf temp_file.txt
+    $input_dir/SRR*/results/STAR/*sortedByCoord.out.bam
 } 2> >(tee -a ./logs/counts_error.log) > >(tee -a ./logs/counts_output.log) 
+
 
