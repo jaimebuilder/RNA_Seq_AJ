@@ -6,8 +6,8 @@
 # popular aligners like STAR, HISAT2, or Bowtie2. The script should process a batch of paired-end FASTQ files, manage outputs,
 # and ensure robust error handling.
 #Usage: ./alignment_script.sh input_reads_dir _R1.fastq _R2.fastq genome/genome.fa genome/annotation.gtf STAR out_dir sample_list.txt
-readonly VERSION="1.0.1"
-# El script requiere estos argumentos, con las siguientes flags:
+readonly VERSION="1.0.2"
+# Possibles flags and arguments:
 #1. -i Input Directory containing the FASTQ files
 #2. -F Forward Read Suffix/Pattern (e.g., _R1.fastq or _1.fastq.gz)
 #3. -R Reverse Read Suffix/Pattern (e.g., _R2.fastq or _2.fastq.gz)
@@ -39,7 +39,7 @@ while getopts "hvi:F:R:f:g:o:a:s:" opt; do
 	esac
 done
 
-if [[ -z "$inputDir" || -z $outputDir || -z $FRPattern || -z $RRPattern || -z $genome_fasta || -z $genome_GTF || -z $aligner_tool || -z $sample_list ]]; then
+if [[ -z "$inputDir" || -z "$outputDir" || -z "$FRPattern" || -z "$RRPattern" || -z "$genome_fasta" || -z "$genome_GTF" || -z "$aligner_tool" || -z "$sample_list" ]]; then
         echo "Invalid option or missing argument: $help_text" >&2
         exit 1
 fi
