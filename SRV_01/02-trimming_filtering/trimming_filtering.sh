@@ -3,13 +3,18 @@
 #Author: Jaime Salama García & Alberto Romero Lucas
 #Date: 08/05/2025
 #Purpose: trimming and filtering raw data
-#DEPENDENCES: fastp
-readonly VERSION="1.0.0"
-#-i input directory
-#-o output directory
-#-h displays help
-#-v displays version
+#DEPENDENCES:
+#1. fastp   GitHub: https://github.com/OpenGene/fastp
+readonly VERSION="1.0.1"
+# Possibles flags and arguments:
+## -i input directory
+## -o output directory
+## -h displays help
+## -v displays version
+#Usage: $(basename $0) -i input_dir -o out_dir -f SRR_file
 readonly help_text="Usage: $(basename $0) -i input_dir -o out_dir -f SRR_file"
+
+# --------------------------------------------------------------------------------------------
 
 #Parssing arguments
 while getopts "hvi:o:f:" opt; do
@@ -25,18 +30,20 @@ while getopts "hvi:o:f:" opt; do
        		exit 1 ;;
 	esac
 done
-
-if [[ -z "$inputDir" || -z $outputDir || -z $SRR_file ]]; then
+#Checks if the needed arguments are provided
+if [[ -z "${inputDir}" || -z ${outputDir} || -z ${SRR_file} ]]; then
         echo "Invalid option or missing argument: $help_text" >&2
         exit 1
 fi
 
-if ! [[ -e $outputDir/logs ]]; then
-                echo "$outputDir/logs directory does not exists, creating..."
-                mkdir $outputDir/logs
-                echo "$outputDir/logs created"
+#Create logs directory
+if ! [[ -e "${outputDir}/logs" ]]; then
+                echo "${outputDir}/logs directory does not exists, creating..."
+                mkdir ${outputDir}/logs
+                echo "${outputDir}/logs created"
 fi
 
+#For every sample: use fastp for trimming and filtering
 {
 while IFS= read -r SRR; do
    fastp \
@@ -50,8 +57,11 @@ while IFS= read -r SRR; do
   --detect_adapter_for_pe \
   -q 20 \
   --length_required 30 \
-  #fastp opts: fwd and revers inputs and outputs,  Crea reports html y json (opcionales, pues luego se realizara con fastqc) Autodetects adapter in Pair Ends, samples Filters any read below 20 phred score. reads shorter than 30 will be discarded
+   --trim_front1 10 --trim_front2 10
+  #fastp opts: fwd and reverse inputs and outputs (fastq trimmed & filtered), Creates reports html (-h) y json (-j) (optionals, another reports will be created by fastqc). 
+  #-w allows fastp to use maximum 16 threads. Autodetects adapter in Pair Ends samples. -q Filters any read below 20 phred score. reads shorter than 30 will be discarded.
+  #They trim the first 10 bases on both (fwd and reverse) reads, 
 
-done < $SRR_file
+done < ${SRR_file}
 
-} 2> >(tee -a $outputDir/logs/trimming_error.log) > >(tee -a $outputDir/logs/trimming.log)
+} 2> >(tee -a ${outputDir}/logs/trimming_error.log) > >(tee -a ${outputDir}/logs/trimming.log)
