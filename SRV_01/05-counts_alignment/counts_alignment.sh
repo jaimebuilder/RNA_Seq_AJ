@@ -30,6 +30,12 @@ while getopts "hvi:g:" opt; do
 	esac
 done
 
+#Checking if both arguments are provided. The assigned variables are not empty.
+if [[ -z "${input_dir}" || -z "{$GTF}" ]]; then
+        echo "Invalid option or missing argument: $help_text" >&2
+        exit 1
+fi
+
 #Input directory verification
 if ! [[ -s "${input_dir}" ]]; then
         echo "error in input directory: ${input_dir} not found or is empty" >&2
