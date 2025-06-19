@@ -2,7 +2,7 @@
 #Script name: counts_alignment
 #Author: Jaime Salama García & Alberto Romero Lucas
 #Date: 08/05/2025
-#Purpose: Obtaining the file with number of counts correponding to each gene using the Bam file obtained after the alingment.
+#Purpose: Obtaining the file with the number of counts correponding to each gene using the Bam file obtained after the alingment.
 #DEPENDENCES: 
 #1. featureCounts		GitHub: https://github.com/gih0004/RNA_Seq_featurecounts
 readonly VERSION="1.0.0"
@@ -12,7 +12,7 @@ readonly VERSION="1.0.0"
 ## -h displays help
 ## -v displays version
 #Usage: ./Import_raw_data.sh -i input_directory
-readonly help_text="Usage: $(basename $0) -i input_dir"
+readonly help_text="Usage: $(basename $0) -i input_dir -g GTF_file"
 
 #-------------------------------------------------------------------------------------------
 
@@ -59,15 +59,15 @@ featureCounts \
     -s 2 \
     -t exon \
     -g gene_id \
-    $input_dir/SRR*/results/STAR/*sortedByCoord.out.bam
+    $input_dir/SRR*/results/STAR/*sortedByCoord.out.bam # Take all the bam files corresponding to each sample as an input for featureCounts tool. The input folder is the same as the output folder of the alignment.
+    #Explanation fo featureCounts options:
+    ## -a Annotation file (GTF)
+    ## -o Output folder where you want to store the counts file
+    ## -T Number of threads used
+    ## -p Activate pair-end mode 
+    ## -s Strandedness (2, for reverse-stranded)
+    ## -t Feature type to count (exon)
+    ## -g GTF attribute used to group exons into genes (gene_id)
 } 2> >(tee -a ./logs/counts_error.log) > >(tee -a ./logs/counts_output.log) 
 echo "Counts completed."
 
-#Explanation fo featureCounts options:
-## -a Annotation file (GTF)
-## -o Output folder where you want to store the counts file
-## -T Number of threads used
-## -p Activate pair-end mode 
-## -s Strandedness (2, for reverse-stranded)
-## -t Feature type to count (exon)
-## -g GTF attribute used to group exons into genes (gene_id)
