@@ -15,6 +15,8 @@ readonly VERSION="1.0.0"
 #Usage: $(basename $0) -i input_dir -o out_dir
 readonly help_text="Usage: $(basename $0) -i input_dir -o out_dir "
 
+#------------------------------------------------------------------------------------------
+
 #Parssing arguments
 while getopts "hvi:o:" opt; do
 	case $opt in
