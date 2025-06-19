@@ -3,7 +3,9 @@
 #Author: Jaime Salama García & Alberto Romero Lucas
 #Date: 08/05/2025
 #Purpose: using fastqc and multiqc for checking quality BEFORE trimming and filtering
-#DEPENDENCES: fastqc and multiqc
+#DEPENDENCES:
+#1. fastqc		GitHub: https://github.com/s-andrews/FastQC
+#2. multiqc		GitHub: https://github.com/MultiQC/MultiQC
 readonly VERSION="1.0.0"
 #Possible flags and arguments:
 ## -i input directory
