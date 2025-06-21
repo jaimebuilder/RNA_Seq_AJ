@@ -1,7 +1,7 @@
-﻿SampleID;Condition
-SRR12506729;Inoculated
-SRR12506736;Inoculated
-SRR12506737;Inoculated
-SRR12506733;control
-SRR12506734;control
-SRR12506735;control
+﻿SampleID,Condition
+SRR12506729,control
+SRR12506736,Inoculated
+SRR12506737,Inoculated
+SRR12506733,Inoculated
+SRR12506734,control
+SRR12506735,control
