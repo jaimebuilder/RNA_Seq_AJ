@@ -2,25 +2,25 @@
 #Script name: RNA-Seq Alignment with Multiple Aligners and Output Management
 #Author: Jaime Salama García & Alberto Romero Lucas
 #Date: 23/04/2025
-#Purpose: A Bash script that automates RNA-Seq alignment for multiple samples, allowing users to choose between
-# popular aligners like STAR, HISAT2, or Bowtie2. The script should process a batch of paired-end FASTQ files, manage outputs,
-# and ensure robust error handling.
-#Usage: ./alignment_script.sh input_reads_dir _R1.fastq _R2.fastq genome/genome.fa genome/annotation.gtf STAR out_dir sample_list.txt
-readonly VERSION="1.0.2"
+#Purpose: A Bash script that automates RNA-Seq alignment for multiple samples.
+#Usage: $(basename $0) -i input_reads_dir -F _R1.fastq -R _R2.fastq -f genome/genome.fa -g genome/annotation.gtf -o out_dir -s sample_list.txt
+readonly VERSION="1.0.3"
 # Possibles flags and arguments:
-#1. -i Input Directory containing the FASTQ files
-#2. -F Forward Read Suffix/Pattern (e.g., _R1.fastq or _1.fastq.gz)
-#3. -R Reverse Read Suffix/Pattern (e.g., _R2.fastq or _2.fastq.gz)
-#4. -f Genome Reference file (FASTA format)
-#5. -g Genome Annotation file (GTF format)
-#6. -a Aligner Tool (choose one: STAR, HISAT2, or Bowtie2)
-#7. -o Output Folder where results will be saved
-#8. -s Sample List: A file containing the base names of each sample (without the _R1 or _R2 part)
-#-h displays help
-#v displays version
-readonly help_text="Usage: $(basename $0) -i input_reads_dir -F _R1.fastq -R _R2.fastq -f genome/genome.fa -g genome/annotation.gtf -a STAR -o out_dir -s sample_list.txt"
+## -i Input Directory containing the FASTQ files
+## -F Forward Read Suffix/Pattern (e.g., _R1.fastq or _1.fastq.gz)
+## -R Reverse Read Suffix/Pattern (e.g., _R2.fastq or _2.fastq.gz)
+## -f Genome Reference file (FASTA format)
+## -g Genome Annotation file (GTF format)
+## -o Output Folder where results will be saved
+## -s Sample List: A file containing the base names of each sample (without the _R1 or _R2 part)
+## -h displays help
+## -v displays version
+readonly help_text="Usage: $(basename $0) -i input_reads_dir -F _R1.fastq -R _R2.fastq -f genome/genome.fa -g genome/annotation.gtf -o out_dir -s sample_list.txt"
+
+# --------------------------------------------------------------------------------------------
+
 #Parssing arguments
-while getopts "hvi:F:R:f:g:o:a:s:" opt; do
+while getopts "hvi:F:R:f:g:o:s:" opt; do
 	case $opt in
     	h) echo $help_text
 			exit 0;;
@@ -32,14 +32,13 @@ while getopts "hvi:F:R:f:g:o:a:s:" opt; do
 		f) genome_fasta="$OPTARG" ;;
 		g) genome_GTF="$OPTARG" ;;
 		o) outputDir="$OPTARG" ;;
-    	a) aligner_tool="$OPTARG" ;;
 		s) sample_list="$OPTARG" ;;
     	?) echo "Invalid option or missing argument: $help_text" >&2
        		exit 1 ;;
 	esac
 done
 
-if [[ -z "$inputDir" || -z "$outputDir" || -z "$FRPattern" || -z "$RRPattern" || -z "$genome_fasta" || -z "$genome_GTF" || -z "$aligner_tool" || -z "$sample_list" ]]; then
+if [[ -z "$inputDir" || -z "$outputDir" || -z "$FRPattern" || -z "$RRPattern" || -z "$genome_fasta" || -z "$genome_GTF" || -z "$sample_list" ]]; then
         echo "Invalid option or missing argument: $help_text" >&2
         exit 1
 fi
@@ -87,38 +86,32 @@ fi
 
 #Creating index of the selected aligner
 {
+#Alignment will be carried out by STAR.
+#First, STAR need genome indices.
+#Checks if indices are already created
+if [ -d "${outputDir}/indices/STAR_genome_indices" ] && [ "$(ls  ${outputDir}/indices/STAR_genome_indices)" ]; then
+    echo "STAR indices already created, skipping indices generation..."
+else
+	echo "STAR selected, creating indices..."
+	STAR --runThreadN  20 \
+		--runMode genomeGenerate \
+    	--genomeDir ${outputDir}/indices/STAR_genome_indices \
+    	--genomeFastaFiles  <(zcat ${genome_fasta}) \
+		--sjdbGTFfile  ${genome_GTF} \
+		--genomeSAindexNbases 13 \
+    	--sjdbOverhang 75 && echo "Genome indices created" || echo "indices failed" >&2
+		#Options:
+		#Uses 20 threads, 
+		#runmode to create the indices
+		#path to output the indices files
+		#path where fasta genome is (in this case genome is compressed so it is send via stdin with zcat, that allows for visualizing correctly compressed files)
+		#Path to GTF (annotation of genome) file
+		#Optimize the process using following formula: "log2(genome_length)/2 -1"
+		#Last option is for optimizing segment length. Optimal value is reads_length -1. 
+fi
+}  2> >(tee -a $outputDir/indices/logs/index_STAR_error.log) > >(tee -a $outputDir/indices/logs/index_STAR_output.log)
 
-case $aligner_tool in
-	STAR)
-		#Alignment will be carried out by STAR.
-                #First, STAR need genome indices.
-		echo "STAR selected, creating indices..."
-                STAR --runThreadN  20 \
-                --runMode genomeGenerate \
-                --genomeDir $outputDir/indices/STAR_genome_indices \
-                --genomeFastaFiles  <(zcat $genome_fasta) \
-                --sjdbGTFfile  $genome_GTF \
-				--genomeSAindexNbases 13 # optimiza en base al tamaño del genoma siguiendo la formula log2(genome_length)/2 -1. El predeterminado es 14, no debe superarse.
-                --sjdbOverhang 75 && echo "Genome indices created" || echo "indices failed" #Se puede poner longitud max de las reads -1; habria que comprobar la max length de las reads.
-	;;
-	HISAT2)
-		echo "HISAT2 selected, creating indices..."
-		#Index creation:
-                hisat2-build $genome_fasta $outputDir/indices/HISAT2_genome_indices/genome_index
-	;;
-	Bowtie2)
-		echo "Bowtie2 selected, creating indices..."
-		#Index creation:
-                bowtie2-build $genome_fasta $outputDir/indices/bowtie2_genome_indices/genome_index
-	;;
-	*)
-		echo "$aligner_tool is not a valid aligner"
-		exit 3
-	;;
-esac
-}  2> >(tee -a $outputDir/indices/logs/index_${aligner_tool}_error.log) > >(tee -a $outputDir/indices/logs/index_${aligner_tool}_output.log)
-
-#Bucle que recorre la lista de samples.
+#For every sample do:
 {
 while IFS= read -r sample; do
 
@@ -137,78 +130,38 @@ while IFS= read -r sample; do
                 mkdir $outputDir/$sample/logs
     fi
 	#All alignment process will redirect its outputs (standar and error)
-		#Defining paired ends names
-		frw_reads=${sample}${FRPattern}
-		rvs_reads=${sample}${RRPattern}
-		if [[ $FRPattern =~ gz$ ]]; then
-			comando="--readFilesCommand zcat"
-			comprimido=1
-		else
-			comando=""
-			comprimido=0
-		fi
+	#Defining paired ends names
+	frw_reads=${sample}${FRPattern}
+	rvs_reads=${sample}${RRPattern}
 
-		#Choose selected aligner
-		case $aligner_tool in
-			STAR)
-				#propper alignemnt is carried out.
-				echo "Starting STAR alignment"
-				STAR --genomeDir $outputDir/indices/STAR_genome_indices \
-					--runThreadN 20 \
-					--readFilesIn $inputDir/$frw_reads $inputDir/$rvs_reads \
-					--outFileNamePrefix $outputDir/$sample/results/STAR/ \
-					--outSAMtype BAM SortedByCoordinate \
-					--outSAMunmapped Within \
-					--outSAMattributes Standard \
-					--quantMode TranscriptomeSAM GeneCounts \
-					--outTmpDir /tmp/STAR_tmp \
-					$comando && echo "Alignment with sample $sample done" || echo "Alignment with sample $sample failed"
-			;;
-			HISAT2)
-				echo "Starting HISAT2 alignment"
-				# HISAT2 alignment
-                		case comprimido in
-                        	1)
-							hisat2 -x $outputDir/indices/HISAT2_genome_indices/genome_index \
-							-1 <(zcat $inputDir/$frw_reads) \
-							-2 <(zcat $inputDir/$rvs_reads) \
-							-S $outputDir/$sample/results/HISAT2/HISAT2.sam && echo "Alignment with sample $sample done" || echo "Alignment with sample $sample failed"
-                            ;;
-                            0)
-							hisat2 -x $outputDir/indices/HISAT2_genome_indices/genome_index \
-							-1 $inputDir/$frw_reads \
-							-2 $inputDir/$rvs_reads \
-							-S $outputDir/$sample/results/HISAT2/HISAT2.sam && echo "Alignment with sample $sample done" || echo "Alignment with sample $sample failed"
-                            ;;
-						esac
-			;;
-			Bowtie2)
-				echo "Starting Bowtie2 alignment"
-				#Bowtie2 alignment:
-				case comprimido in 			#REVISAR OUTPUT, se busca que sean .bam pero hisat2 y bowtie2 solo admiten output en sam, buscar soluciones con samtools
-					1)
-						bowtie2 \
-  						-x $outputDir/indices/bowtie2_genome_indices/genome_index \
-  						-1 <(zcat $inputDir/$frw_reads) \
- 	 					-2 <(zcat $inputDir/$rvs_reads) \
-  						-S $outputDir/$sample/results/bowtie2/alineamiento.sam \
-  						-p 20 && echo "Alignment with sample $sample done" || echo "Alignment with sample $sample failed"
-					;;
-					0)
-						bowtie2 \
-                        -x $outputDir/indices/bowtie2_genome_indices/genome_index \
-                        -1 $inputDir/$frw_reads \
-                    	-2 $inputDir/$rvs_reads \
-                    	-S $outputDir/$sample/results/bowtie2/alineamiento.bam \
-        				-p 20 && echo "Alignment with sample $sample done" || echo "Alignment with sample $sample failed"
-					;;
-				esac
-			;;
-			*)
-				echo "Aligner tool not valid"
-				exit 3
-			    ;;
-		esac
+	#Checks if reads are compressed or not
+	if [[ $FRPattern =~ gz$ ]]; then
+		comando="--readFilesCommand zcat"
+	else
+		comando=""
+	fi
+
+	#Alignemnt is carried out.
+	echo "Starting STAR alignment"
+	STAR --genomeDir $outputDir/indices/STAR_genome_indices \
+		 --runThreadN 20 \
+		 --readFilesIn $inputDir/$frw_reads $inputDir/$rvs_reads \
+		 --outFileNamePrefix $outputDir/$sample/results/STAR/ \
+		 --outSAMtype BAM SortedByCoordinate \
+		 --outSAMunmapped Within \
+		 --outSAMattributes Standard \
+		 --outTmpDir /tmp/STAR_tmp \
+		 ${comando} && echo "Alignment with sample $sample done" || echo "Alignment with sample $sample failed" >&2
+	#STAR OPTIONS:
+	#Path to indices created before
+	#20 threads allowed
+	#Path to fwd and reverse files
+	#output files are BAM sortedByCoordinatte (needed for featurecounts)
+	#--outSAMunmapped Within means that reads not mapped to the genome are still printed in the BAM output file (with this option we can still make more quality controls such as % of unmapped reads...)
+	#--outSAMattributes Standard: Attributes in BAM file are the standard.
+	#--outTmpDir to specify a directory for temporal files STAR uses, this line is commonly optional but obligatory when using WSL where normal output are in WINDOWS DISKs.
+	# ${comando} can be either "--readFilesCommand zcat" or nothing. The first allows STAR to read compressed files.
+
 done < $sample_list
 } 2> >(tee -a $outputDir/$sample/logs/${sample}_alignment_error.log) > >(tee -a $outputDir/$sample/logs/${sample}_alignment_output.log) 
 echo "Alignment completed"
