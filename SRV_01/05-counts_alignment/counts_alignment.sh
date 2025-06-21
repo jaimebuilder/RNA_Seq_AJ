@@ -74,7 +74,6 @@ echo "Counts completed."
 } 2> >(tee -a ./logs/counts_error.log) > >(tee -a ./logs/counts_output.log) 
 
 
-
 #Now a little text processing on the output for making it fully compatible with the next R script for differential analysis
 {
 echo "Starting text processing of the output"
