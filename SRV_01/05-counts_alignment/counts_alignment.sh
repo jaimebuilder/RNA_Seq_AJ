@@ -68,6 +68,31 @@ featureCounts \
     ## -s Strandedness (2, for reverse-stranded)
     ## -t Feature type to count (exon)
     ## -g GTF attribute used to group exons into genes (gene_id)
-} 2> >(tee -a ./logs/counts_error.log) > >(tee -a ./logs/counts_output.log) 
+
 echo "Counts completed."
+
+} 2> >(tee -a ./logs/counts_error.log) > >(tee -a ./logs/counts_output.log) 
+
+
+
+#Now a little text processing on the output for making it fully compatible with the next R script for differential analysis
+{
+echo "Starting text processing of the output"
+
+sed -i "2 s;${input_dir}/\(SRR[0-9]*\)/results/STAR/[a-zA-Z0-9.]*;\1;g" ./counts.txt
+#This sed command does:
+#-i flag for in-place modification (modifies directly the provided file, similar to redirect stdout to the file >./counts.txt)
+#Searchs in the line 2 (second line) the regular expresion "${input_dir}/\(SRR[0-9]*\)/results/STAR/[a-zA-Z0-9.]*" which is the path and name of the corresponding BAM file features counts uses for each column of the output.
+#The pattern is then changed to captured pattern
+#g is for global (changes all matches)
+#The part in the regex between \(   \) is captured and used for substitution as "\1"
+#The delimiter used in this case is ";" rather than typical "/". This allows the character "/" to be part of the regex
+#Example of how this command works: 
+#Before: "../04-reads_alignment//SRR12506729/results/STAR/Aligned.sortedByCoord.out.bam	../04-reads_alignment//SRR12506733/results/STAR/Aligned.sortedByCoord.out.bam"   (sed command)--> AFTER:  "SRR12506729 SRR12506733"
+
+echo "Finished text processing, output ready for next step"
+
+} 2> >(tee -a ./logs/text_processing_error.log) > >(tee -a ./logs/text_processing_output.log) 
+
+
 
