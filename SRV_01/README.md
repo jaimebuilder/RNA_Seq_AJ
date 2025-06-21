@@ -5,6 +5,8 @@ This is a workflow for RNA-Seq designed by Jaime Salama García & Alberto Romero
 The workflow is divided in 6 steps, from 1-5 are bash scripts to be runned in a linux machine preferably in a conda environment that can be created as described later.
 The last step (06-diffferential_analysis) consists of an R script in which all the analysis is done using some packages described in  the first part of the script.
 
+You may manual download the scripts or use "git" to clone this repository. 
+
 BEFORE RUNNING ANY BASH SCRIPT:
 
 For creating the conda environment:
