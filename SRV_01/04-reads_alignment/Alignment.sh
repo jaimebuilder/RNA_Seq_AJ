@@ -157,7 +157,7 @@ while IFS= read -r sample; do
 		 ${comando} && echo "Alignment with sample $sample done" || echo "Alignment with sample $sample failed" >&2
 	#STAR OPTIONS:
 	#Path to indices created before
-	#20 threads allowed
+	#16 threads allowed
 	#Path to fwd and reverse files
 	#output files are BAM sortedByCoordinatte (needed for featurecounts)
 	#--outSAMunmapped Within means that reads not mapped to the genome are still printed in the BAM output file (with this option we can still make more quality controls such as % of unmapped reads...)

@@ -33,7 +33,7 @@ Always remember to activate the environment BEFORE running any bash script:
 conda activate RNA_SEQ #In case you are not already in the environment. Make sure you use the same name as used in the previous commands
 #End of commands
 
-Brief explication of dependences:
+Brief explanation of dependences:
 sra-tools: a package for downloading data from NCBI database 
 pigz: An alternative command for gzip that allows for multiple threads (Reducing the time needed for compression in multithreads machines)
 fastqc: A program to make reports about the quality of the reads
@@ -137,6 +137,8 @@ A folder called indices where is located a subfolder called STAR_genome_indices 
 A folder for each sample, inside this folder 2 subfolders being logs and results. INside results a subfolder called STAR will contain BAM files and other outputs STAR creates.
 
 The path to BAM files (files sorted by coordinate of all mapped reads) will be: ./samplename/results/STAR/Aligned.sortedByCoord.out.bam (this path is recognised in next step)
+
+It is possible to run multiqc on STAR outputs to analyze how the alignment of each samples has been. Command example: multiqc ./SRR12506733/results/STAR/ -o ./SRR12506733/multiqc
 
 6. In 05-counts-alignment:
 This step consist in counting how many reads are aligned to each gene (without normalizing)
