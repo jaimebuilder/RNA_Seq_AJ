@@ -65,7 +65,7 @@ In this step the scripts download all the files we would need during the workflo
 
 command: bash Import_raw_data.sh -f SRR_samples_file.txt -d https://ftp.ebi.ac.uk/ensemblgenomes/pub/release-61/plants/fasta/vigna_radiata/dna/Vigna_radiata.Vradiata_ver6.dna.toplevel.fa.gz -g https://ftp.ebi.ac.uk/ensemblgenomes/pub/release-61/plants/gtf/vigna_radiata/Vigna_radiata.Vradiata_ver6.61.gtf.gz
 
-Explication: 
+Explanation: 
 -f SRR_samples_file.txt is the file that contains the SRR accessions of the samples, one per line.
 -d url of the genome fasta
 -g url of the genome GTF 
@@ -76,7 +76,7 @@ Estimated outputs: genome fasta and GTF in a subdirectory called genome_files an
 This step is to evaluate the quality of the raw reads
 command:  bash pre_fastqc.sh -i ../00-raw_data/ -o .
 
-Explication: 
+Explanation: 
 
 -i is the input directory, where reads are allocated, in this case ../00-raw_data, just where preivous script donwloaded the data. 
 (This script will look for COMPRIMED files: .fastq.gz and paired-end _1 _2 )
@@ -91,7 +91,7 @@ a multiqc folder with a subfolder multiqc_data and .html global report
 This step is for filtering and trimming reads so we remain just the best quality reads without any adapter sequence that could compromise the analysis
 command: bash trimming_filtering.sh -i ../00-raw_data/ -o . -f ../00-raw_data/SRR_samples_file.txt
 
-Explication: 
+Explanation: 
 
 -f is the same file as described in 00-raw_data 
 -i is the directory with reads to input (in this case 00-raw_data)
@@ -118,7 +118,7 @@ same outputs as described in 01.
 This step will align the cleaned reads to the genome. Itn requires 2-steps, first creating and index for the genome and second align each sample's reads to the genome.
 command: bash Alignment.sh -i ../02-trimming_filtering/ -F _1_cleaned.fastq.gz -R _2_cleaned.fastq.gz -f ../00-raw_data/genome_files/Vigna_radiata.Vradiata_ver6.dna.toplevel.fa -g ../00-raw_data/genome_files/Vigna_radiata.Vradiata_ver6.61.gtf -o . -s ../00-raw_data/SRR_samples_file.txt
 
-Explication:
+Explanation:
 
 -i Input Directory containing the FASTQ files (They can be either compressed or not, but all files the same)
 -F Forward Read Suffix/Pattern (e.g., _R1.fastq or _1.fastq.gz) In this case is _1_cleaned.fastq.gz
@@ -143,7 +143,7 @@ This step consist in counting how many reads are aligned to each gene (without n
 
 command: bash counts_alignment.sh -i ../04-reads_alignment/ -g ../00-raw_data/genome_files/Vigna_radiata.Vradiata_ver6.61.gtf
 
-Explication:
+Explanation:
 
 -d input_directory. Directory that contains the results of the alignment. It SHOULD BE the same than the Output directory specified during the alingment. 
 Note: the script automatically recognise the same output structure explained in step 04 so will first check for all folders named SRR* in the inpuut directory.
