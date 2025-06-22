@@ -96,10 +96,10 @@ else
 	STAR --runThreadN  20 \
 		--runMode genomeGenerate \
     	--genomeDir ${outputDir}/indices/STAR_genome_indices \
-    	--genomeFastaFiles  <(zcat ${genome_fasta}) \
+    	--genomeFastaFiles ${genome_fasta} \
 		--sjdbGTFfile  ${genome_GTF} \
 		--genomeSAindexNbases 13 \
-    	--sjdbOverhang 75 && echo "Genome indices created" || echo "indices failed" >&2
+    	--sjdbOverhang 65 && echo "Genome indices created" || echo "indices failed" >&2
 		#Options:
 		#Uses 20 threads, 
 		#runmode to create the indices
@@ -112,7 +112,7 @@ fi
 }  2> >(tee -a $outputDir/indices/logs/index_STAR_error.log) > >(tee -a $outputDir/indices/logs/index_STAR_output.log)
 
 #For every sample do:
-{
+
 while IFS= read -r sample; do
 
 	#For each sample, creates a subdirectory just in case it does not exists previosly
@@ -129,6 +129,8 @@ while IFS= read -r sample; do
                 echo "$outputDir/$sample/logs directory does not exists, creating..."
                 mkdir $outputDir/$sample/logs
     fi
+{
+	rm -rf /tmp/STAR_tmp #Make sure temporal directory does not exist just before STAR starts.
 	#All alignment process will redirect its outputs (standar and error)
 	#Defining paired ends names
 	frw_reads=${sample}${FRPattern}
@@ -162,7 +164,9 @@ while IFS= read -r sample; do
 	#--outTmpDir to specify a directory for temporal files STAR uses, this line is commonly optional but obligatory when using WSL where normal output are in WINDOWS DISKs.
 	# ${comando} can be either "--readFilesCommand zcat" or nothing. The first allows STAR to read compressed files.
 
+} 2> >(tee -a ${outputDir}/${sample}/logs/${sample}_alignment_error.log) > >(tee -a ${outputDir}/${sample}/logs/${sample}_alignment_output.log)
+
 done < $sample_list
-} 2> >(tee -a $outputDir/$sample/logs/${sample}_alignment_error.log) > >(tee -a $outputDir/$sample/logs/${sample}_alignment_output.log) 
+
 echo "Alignment completed"
 exit 0

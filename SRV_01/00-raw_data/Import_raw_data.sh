@@ -9,7 +9,7 @@
 readonly VERSION="1.0.1"
 #Usage: ./Import_raw_data.sh -f SRR file 
 # Possibles flags and arguments:
-## -f SRA_file.txt File that contains the SRA accessions of the samples, one per line.
+## -f SRR_file.txt File that contains the SRR accessions of the samples, one per line.
 ## -h displays help
 ## -v displays version
 ## -d genome_fasta url
@@ -61,17 +61,23 @@ fi
 #Download genome files
 wget -P ./genome_files/ ${genome_fasta_url}
 wget -P ./genome_files/ ${genome_GTF_url}
+pigz -d ./genome_files/*.gz #Decompress (-d) all .gz files using all available threads. Is an ALTERNATIVE CODE to gunzip.
 
 #Download and compress the raw data files (fastq files) by reading every SRR ID (one per line) in SRR file.
 while IFS= read -r SRR; do
     prefetch "${SRR}"
-    fasterq-dump "${SRR}" --split-files --threads 20 -O ./
+    fasterq-dump "${SRR}" --split-files --threads 20 -O ./ #--split-files splits forward and reverse reads
     
+    echo "Download ${SRR} completed, starting compression"
     # ALTERNATIVE CODE:    
     # An alternative for:  gzip ./*.fastq        is:
-    pigz ./*.fastq
+    pigz -p 20 ./*.fastq
     #pigz allows for multiple threads compression, which is faster than normal gzip. By default uses all available threads, however it can be limited using -p N; N is the number of threads.
     #END OF ALTERNATIVE CODE
+    echo "Compression of ${SRR} completed"
+    
+done < ${SRR_file}
 
-done < $SRR_file
+echo "Finished downloads and compression"
+
 } 2> >(tee -a ./logs/raw_data_error.log) > >(tee -a ./logs/raw_data_output.log) 
