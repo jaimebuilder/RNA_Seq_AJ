@@ -155,3 +155,9 @@ logs folder.
 counts.txt : This is the important file containing all raw counts 
 counts.txt.summary: A summary output of featureCounts with information like how many reads assigned or unassigned... 
 
+7. In 06-differential_analysis
+
+There is a .Rmd (R markdown) script with all the differential analysis carried out by R. You should execute the chunks to obtain some common plots. 
+An html or PDF report could be obtained using the "knit" option.
+
+For more understanding of the script check the comments inside.
