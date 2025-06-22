@@ -327,7 +327,7 @@ dataf <- dataf %>% as_tibble(rownames = "gene")
 
 # Set the thresholds where you want to filter your data
 padj.cutoff <- 0.01
-lfc.cutoff <- 0.58 # remember log!
+lfc.cutoff <- 1 # remember log!
 
 # Merge the output table from the comparison with the counts (dataf)
 #   Add also another column that includes TRUE/FALSE in case the gene pass the thresholds set
@@ -397,9 +397,9 @@ enrichment_custom <- enricher( interesting_set, # DEGs list
                      TERM2GENE = term2gene_filtered, # A data.frame with the first column containing the term ID and the second column the corresponding mapped gene
                      TERM2NAME = term2name_filtered, # A data.frame with the first column of term ID and the second column of the corresponding term name
                      universe = background_genes, # the backgroud genes
-                     pvalueCutoff = 0.1, # Adjusted pvalue Cutoff on enrichment test to report
+                     pvalueCutoff = 0.05, # Adjusted pvalue Cutoff on enrichment test to report
                      pAdjustMethod = "BH", # Method for the p.adjusted to be calculated
-                     qvalueCutoff = 0.1)
+                     qvalueCutoff = 0.05)
 
 # Get the result from the enrichment as a data frame
 ora_analysis_bp_df <- as.data.frame(enrichment_custom@result)
