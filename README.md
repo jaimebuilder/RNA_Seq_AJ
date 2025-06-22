@@ -1,6 +1,6 @@
 Online Github Repository: https://github.com/jaimebuilder/RNA_Seq_AJ 
 
-This is a workflow for RNA-Seq designed by Jaime Salama García & Alberto Romero Lucas for a final work of the subject Programación para bioinformática of Grado en Biotécnología in UPM/Universidad Politécnica de Madrid
+This is a workflow for RNA-Seq designed by Jaime Salama García & Alberto Romero Lucas for a final work of the subject Programación para bioinformática of Grado en Biotecnología in UPM/Universidad Politécnica de Madrid
 
 The workflow is divided in 6 steps, from 1-5 are bash scripts to be runned in a linux machine preferably in a conda environment that can be created as described later.
 The last step (06-diffferential_analysis) consists of an R script in which all the analysis is done using some packages described in  the first part of the script.
