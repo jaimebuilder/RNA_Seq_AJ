@@ -1,27 +1,23 @@
 ---
 title: "DESeq2_biotech"
-author: "Sara González Bodí y Laura Rodriguez Casillas"
+author: "Sara González Bodí y Laura Rodriguez Casillas (Few modifications by Jaime Salama & Alberto Romero"
 date: '`r format(Sys.time(), "%d %B, %Y")`'
 output: 
+  pdf_document:
+    latex_engine: xelatex
+    toc: true
+  html_notebook:
+    code_folding: hide
   html_document:
-  code_folding: hide
-fig_caption: yes
-number_sections: yes
-theme: paper
-toc: true
-toc_float: yes
-html_notebook:
-  code_folding: hide
-fig_caption: yes
-number_sections: yes
-theme: paper
-toc: true
-toc_float: yes
-pdf_document:
-  toc: yes
+    toc: true
+    toc_float: true
+    number_sections: true
+    fig_caption: true
+    theme: paper
+    code_folding: hide
 editor_options: 
   markdown: 
-  wrap: sentence
+    wrap: sentence
 ---
 #Few modifications made by Jaime Salama & Alberto Romero
 
@@ -101,7 +97,7 @@ message("✅ All packages loaded successfully.")
 #     In case you work with htseq counts output
 # counts_directory <- ""
 #     In case you work with feature counts output
-counts_directory <- "../05-counts_alignment"
+counts_directory <- "../05-counts_alignment/"
 #   Output directory 
 output_dirertory <- "./output_DESeq2"
 #   Table with metadata (you have to create it by your own)
@@ -113,9 +109,9 @@ if (! dir.exists(output_dirertory)){ dir.create(output_dirertory, recursive = TR
 
 # ONLY RUN FOR HTSeq-counts OUTPUTS
 
-## Upload data for HTSeq-count users and create DESeq object 
+## Upload data for HTSeq-count users and create DESeq object (NOT RUN)
 
-```{r}
+```{r, eval=FALSE} 
 # Get the samples files sorted and their names
 sampleFiles <- sort(list.files(counts_directory, pattern = "*.counts"))
 
@@ -142,7 +138,7 @@ ddsHTSeq <- DESeqDataSetFromHTSeqCount(sampleTable = merge,
 
 ```{r}
 # Get the samples files sorted and their names
-sampleFiles <- sort(list.files(counts_directory, pattern = "*.txt"))
+sampleFiles <- sort(list.files(counts_directory, pattern = "*.txt$"))
 
 # Get the samples names
 get.sample.name <- function(fname) strsplit(basename(fname), ".txt")[[1]][1]
@@ -330,7 +326,7 @@ dataf <- vst(dds, blind = TRUE) %>% assay()
 dataf <- dataf %>% as_tibble(rownames = "gene")
 
 # Set the thresholds where you want to filter your data
-padj.cutoff <- 0.05
+padj.cutoff <- 0.01
 lfc.cutoff <- 0.58 # remember log!
 
 # Merge the output table from the comparison with the counts (dataf)

@@ -115,8 +115,10 @@ Estimated outputs:
 same outputs as described in 01.
 
 5. In 04-reads_alignment
-This step will align the cleaned reads to the genome.
+This step will align the cleaned reads to the genome. Itn requires 2-steps, first creating and index for the genome and second align each sample's reads to the genome.
 command: bash Alignment.sh -i ../02-trimming_filtering/ -F _1_cleaned.fastq.gz -R _2_cleaned.fastq.gz -f ../00-raw_data/genome_files/Vigna_radiata.Vradiata_ver6.dna.toplevel.fa -g ../00-raw_data/genome_files/Vigna_radiata.Vradiata_ver6.61.gtf -o . -s ../00-raw_data/SRR_samples_file.txt
+
+Explication:
 
 -i Input Directory containing the FASTQ files (They can be either compressed or not, but all files the same)
 -F Forward Read Suffix/Pattern (e.g., _R1.fastq or _1.fastq.gz) In this case is _1_cleaned.fastq.gz
@@ -126,7 +128,30 @@ command: bash Alignment.sh -i ../02-trimming_filtering/ -F _1_cleaned.fastq.gz -
 -o Output Folder where results will be saved. In this case is this directory
 -s Sample List: A file containing the base names of each sample (without the _R1 or _R2 part)
 
-Note: fastq files names should be exactly the same as joining the lines from -s File + Pattern (FWD or REV), for example: 
+Note: fastq files names should be exactly the same as joining the lines from -s File + Pattern (FWD or REV), for example: SRR12506729 + _1_cleaned.fastq.gz
 
+Estimated outputs:
 
+A folder called indices where is located a subfolder called STAR_genome_indices with all the index files STAR creates & a logs folder
+
+A folder for each sample, inside this folder 2 subfolders being logs and results. INside results a subfolder called STAR will contain BAM files and other outputs STAR creates.
+
+The path to BAM files (files sorted by coordinate of all mapped reads) will be: ./samplename/results/STAR/Aligned.sortedByCoord.out.bam (this path is recognised in next step)
+
+6. In 05-counts-alignment:
+This step consist in counting how many reads are aligned to each gene (without normalizing)
+
+command: bash counts_alignment.sh -i ../04-reads_alignment/ -g ../00-raw_data/genome_files/Vigna_radiata.Vradiata_ver6.61.gtf
+
+Explication:
+
+-d input_directory. Directory that contains the results of the alignment. It SHOULD BE the same than the Output directory specified during the alingment. 
+Note: the script automatically recognise the same output structure explained in step 04 so will first check for all folders named SRR* in the inpuut directory.
+-g GTF file
+
+Estimated outputs:
+
+logs folder.
+counts.txt : This is the important file containing all raw counts 
+counts.txt.summary: A summary output of featureCounts with information like how many reads assigned or unassigned... 
 
