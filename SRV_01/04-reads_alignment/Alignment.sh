@@ -4,7 +4,7 @@
 #Date: 23/04/2025
 #Purpose: A Bash script that automates RNA-Seq alignment for multiple samples.
 #Usage: $(basename $0) -i input_reads_dir -F _R1.fastq -R _R2.fastq -f genome/genome.fa -g genome/annotation.gtf -o out_dir -s sample_list.txt
-readonly VERSION="1.0.3"
+readonly VERSION="1.0.4"
 # Possibles flags and arguments:
 ## -i Input Directory containing the FASTQ files
 ## -F Forward Read Suffix/Pattern (e.g., _R1.fastq or _1.fastq.gz)
@@ -96,10 +96,10 @@ else
 	STAR --runThreadN  20 \
 		--runMode genomeGenerate \
     	--genomeDir ${outputDir}/indices/STAR_genome_indices \
-    	--genomeFastaFiles  <(zcat ${genome_fasta}) \
+    	--genomeFastaFiles ${genome_fasta} \
 		--sjdbGTFfile  ${genome_GTF} \
 		--genomeSAindexNbases 13 \
-    	--sjdbOverhang 75 && echo "Genome indices created" || echo "indices failed" >&2
+    	--sjdbOverhang 65 && echo "Genome indices created" || echo "indices failed" >&2
 		#Options:
 		#Uses 20 threads, 
 		#runmode to create the indices
@@ -112,7 +112,7 @@ fi
 }  2> >(tee -a $outputDir/indices/logs/index_STAR_error.log) > >(tee -a $outputDir/indices/logs/index_STAR_output.log)
 
 #For every sample do:
-{
+
 while IFS= read -r sample; do
 
 	#For each sample, creates a subdirectory just in case it does not exists previosly
@@ -129,6 +129,8 @@ while IFS= read -r sample; do
                 echo "$outputDir/$sample/logs directory does not exists, creating..."
                 mkdir $outputDir/$sample/logs
     fi
+{
+	rm -rf /tmp/STAR_tmp #Make sure temporal directory does not exist just before STAR starts.
 	#All alignment process will redirect its outputs (standar and error)
 	#Defining paired ends names
 	frw_reads=${sample}${FRPattern}
@@ -144,13 +146,14 @@ while IFS= read -r sample; do
 	#Alignemnt is carried out.
 	echo "Starting STAR alignment"
 	STAR --genomeDir $outputDir/indices/STAR_genome_indices \
-		 --runThreadN 20 \
+		 --runThreadN 16 \
 		 --readFilesIn $inputDir/$frw_reads $inputDir/$rvs_reads \
 		 --outFileNamePrefix $outputDir/$sample/results/STAR/ \
 		 --outSAMtype BAM SortedByCoordinate \
 		 --outSAMunmapped Within \
 		 --outSAMattributes Standard \
 		 --outTmpDir /tmp/STAR_tmp \
+		 --limitBAMsortRAM 16000000000 \
 		 ${comando} && echo "Alignment with sample $sample done" || echo "Alignment with sample $sample failed" >&2
 	#STAR OPTIONS:
 	#Path to indices created before
@@ -160,9 +163,12 @@ while IFS= read -r sample; do
 	#--outSAMunmapped Within means that reads not mapped to the genome are still printed in the BAM output file (with this option we can still make more quality controls such as % of unmapped reads...)
 	#--outSAMattributes Standard: Attributes in BAM file are the standard.
 	#--outTmpDir to specify a directory for temporal files STAR uses, this line is commonly optional but obligatory when using WSL where normal output are in WINDOWS DISKs.
+	#--limitBAMsortRAM limits RAM usage while sorting BAM files (in this case to aprox 16GB)
 	# ${comando} can be either "--readFilesCommand zcat" or nothing. The first allows STAR to read compressed files.
 
+} 2> >(tee -a ${outputDir}/${sample}/logs/${sample}_alignment_error.log) > >(tee -a ${outputDir}/${sample}/logs/${sample}_alignment_output.log)
+
 done < $sample_list
-} 2> >(tee -a $outputDir/$sample/logs/${sample}_alignment_error.log) > >(tee -a $outputDir/$sample/logs/${sample}_alignment_output.log) 
+
 echo "Alignment completed"
 exit 0

@@ -11,6 +11,7 @@ readonly VERSION="1.0.1"
 ## -o output directory
 ## -h displays help
 ## -v displays version
+## -f SRR_file.txt File that contains the SRR accessions of the samples, one per line.
 #Usage: $(basename $0) -i input_dir -o out_dir -f SRR_file
 readonly help_text="Usage: $(basename $0) -i input_dir -o out_dir -f SRR_file"
 
@@ -20,12 +21,12 @@ readonly help_text="Usage: $(basename $0) -i input_dir -o out_dir -f SRR_file"
 while getopts "hvi:o:f:" opt; do
 	case $opt in
     	h) echo $help_text #Displays help
-			exit 0;;
-       	v) echo "Version: $VERSION"  # Display version info
-       		exit 0 ;;
+			   exit 0;;
+      v) echo "Version: $VERSION"  # Display version info
+         exit 0 ;;
     	i) inputDir="$OPTARG" ;;
-		o) outputDir="$OPTARG" ;;
-        f) SRR_file="$OPTARG";;
+		  o) outputDir="$OPTARG" ;;
+      f) SRR_file="$OPTARG";;
     	*) echo "Invalid option or missing argument: $help_text" >&2
        		exit 1 ;;
 	esac
@@ -47,20 +48,21 @@ fi
 {
 while IFS= read -r SRR; do
    fastp \
-  -i ${inputDir}/${SRR}_1.fastq.gz \ 
-  -I ${inputDir}/${SRR}_2.fastq.gz \ 
-  -o ${outputDir}/${SRR}_1.cleaned.fastq.gz \ 
-  -O ${outputDir}/${SRR}_2.cleaned.fastq.gz \ 
-  -h ${outputDir}/${SRR}_report.html \ 
+  -i ${inputDir}/${SRR}_1.fastq.gz \
+  -I ${inputDir}/${SRR}_2.fastq.gz \
+  -o ${outputDir}/${SRR}_1_cleaned.fastq.gz \
+  -O ${outputDir}/${SRR}_2_cleaned.fastq.gz \
+  -h ${outputDir}/${SRR}_report.html \
   -j ${outputDir}/${SRR}_report.json \
   -w 16 \
   --detect_adapter_for_pe \
   -q 20 \
-  --length_required 30 \
-   --trim_front1 10 --trim_front2 10
+  --length_required 50 \
+  --trim_front1 10 --trim_front2 10 \
+  --trim_poly_g
   #fastp opts: fwd and reverse inputs and outputs (fastq trimmed & filtered), Creates reports html (-h) y json (-j) (optionals, another reports will be created by fastqc). 
-  #-w allows fastp to use maximum 16 threads. Autodetects adapter in Pair Ends samples. -q Filters any read below 20 phred score. reads shorter than 30 will be discarded.
-  #They trim the first 10 bases on both (fwd and reverse) reads, 
+  #-w allows fastp to use maximum 16 threads. Autodetects adapter in Pair Ends samples. -q Filters any read below 20 phred score. reads shorter than 50 will be discarded.
+  #They trim the first 10 bases on both (fwd and reverse) reads, and the poly_g
 
 done < ${SRR_file}
 
